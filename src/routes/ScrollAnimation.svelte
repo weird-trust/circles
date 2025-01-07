@@ -9,48 +9,86 @@
   onMount(() => {
     const path = document.querySelector("#line");
     const circle = document.querySelector("#movingCircle");
+    const teaserContent = document.querySelector("#teaserContent");
+    const headline = teaserContent.querySelector(".teaser-headline");
+    const copy = teaserContent.querySelector(".teaser-copy");
+    const link = teaserContent.querySelector(".teaser-link");
 
     if (path && circle) {
-      gsap.to(circle, {
+      const pathLength = path.getTotalLength();
+
+      const teaserPoints = [
+        {
+          progress: 0.2,
+          headline: "Entwicklungen Automobilmarkt",
+          copy: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.Ut enim.",
+          linkText: "Mehr erfahren →",
+          linkHref: "#link1"
+        },
+        {
+          progress: 0.4,
+          headline: "Headline 2",
+          copy: "Dies ist ein anderer erster Satz.<br>Ein weiterer Satz.<br>Noch ein Satz.",
+          linkText: "Details →",
+          linkHref: "#link2"
+        },
+        {
+          progress: 0.5,
+          headline: "Headline 3",
+          copy: "Ein neuer erster Satz.<br>Ein neuer zweiter Satz.<br>Ein neuer dritter Satz.",
+          linkText: "Weiterlesen →",
+          linkHref: "#link3"
+        }
+      ];
+
+      const animation = gsap.to(circle, {
         scrollTrigger: {
           trigger: path,
           start: "top top",
           end: "bottom bottom",
           scrub: 1,
-          pin: true
+          pin: true,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            updateTeaser(progress);
+          }
         },
         motionPath: {
           path: path,
-          start: 0,
-          end: 1,
           align: path,
           autoRotate: true,
           alignOrigin: [0.5, 0.5]
         }
       });
 
-      // Beispiel für Trigger an bestimmten Punkten
-      const triggerPoints = [
-        { position: 0.25, teaserId: "teaser1" },
-        { position: 0.5, teaserId: "teaser2" },
-        { position: 0.75, teaserId: "teaser3" }
-      ];
-
-      triggerPoints.forEach((point) => {
-        ScrollTrigger.create({
-          trigger: path,
-          start: `top top+=${point.position * path.getTotalLength()}`,
-          end: `top top+=${(point.position + 0.1) * path.getTotalLength()}`, // Adjust the end position
-          onEnter: () =>
-            (document.getElementById(point.teaserId).style.display = "block"),
-          onLeave: () =>
-            (document.getElementById(point.teaserId).style.display = "none"),
-          onLeaveBack: () =>
-            (document.getElementById(point.teaserId).style.display = "none")
-        });
+      gsap.ticker.add(() => {
+        const circlePosition = circle.getBoundingClientRect();
+        teaserContent.style.transform = `translate(${circlePosition.x}px, ${circlePosition.y}px)`;
       });
-    } else {
-      console.error("SVG path or circle not found");
+
+      function updateTeaser(progress) {
+        let teaserDisplayed = false;
+        teaserPoints.forEach((point) => {
+          if (Math.abs(progress - point.progress) < 0.2) {
+            headline.textContent = point.headline;
+            copy.innerHTML = point.copy;
+            link.textContent = point.linkText;
+            link.href = point.linkHref;
+            gsap.to(teaserContent, {
+              duration: 0.3,
+              opacity: 1
+            });
+            teaserDisplayed = true;
+          }
+        });
+
+        if (!teaserDisplayed) {
+          gsap.to(teaserContent, {
+            duration: 0.3,
+            opacity: 0
+          });
+        }
+      }
     }
   });
 </script>
@@ -69,23 +107,76 @@
     stroke-width="80"
     stroke-linecap="round"
   />
-  <circle id="movingCircle" cx="10" cy="1679" r="40" fill="#2E908B" />
+  <g id="movingCircle">
+    <circle cx="10" cy="1679" r="40" fill="#2E908B" />
+  </g>
 </svg>
 
-<!-- Teaser Elemente -->
-<div id="teaser1" class="teaser" style="display: none;">Teaser 1 Inhalt</div>
-<div id="teaser2" class="teaser" style="display: none;">Teaser 2 Inhalt</div>
-<div id="teaser3" class="teaser" style="display: none;">Teaser 3 Inhalt</div>
+<div id="teaserContent" class="teaser-content">
+  <h2 class="teaser-headline">Headline</h2>
+  <p class="teaser-copy">
+    Dies ist der erste Satz des Textes.<br />
+    Dies ist der zweite Satz des Textes.<br />
+    Dies ist der dritte Satz des Textes.
+  </p>
+  <a href="#" class="teaser-link">
+    Mehr erfahren <span class="arrow">→</span>
+  </a>
+</div>
 
 <style>
-  .teaser {
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: white;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  .teaser-content {
+    display: flex;
+    width: 376px;
+    height: auto;
+    padding: var(--l, 32px);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--m, 16px);
+    align-self: stretch;
+    border-radius: var(--m, 16px);
+    background: var(--primary-bosch-trkis-50-markt-und-trends, #18837e);
+    color: #fff;
+    text-align: left;
+    opacity: 0;
+    height: auto;
+    pointer-events: none;
+    position: absolute; /* Use absolute positioning */
+    z-index: 1000;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .teaser-headline {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 32px;
+    letter-spacing: -0.24px;
+    margin: 0;
+  }
+
+  .teaser-copy {
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .teaser-link {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .teaser-link .arrow {
+    font-size: 18px;
+    transition: transform 0.2s;
+  }
+
+  .teaser-link:hover .arrow {
+    transform: translateX(5px);
   }
 </style>
