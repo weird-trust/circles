@@ -88,7 +88,7 @@
 
             gsap.fromTo(
               teaserContent,
-              { opacity: 0, scale: 0.1 },
+              { opacity: 1, scale: 1 },
               {
                 opacity: 1,
                 scale: 1,
@@ -97,7 +97,7 @@
             );
           },
           onLeave: () => {
-            gsap.to(teaserContent, { opacity: 0, duration: 0.75, scale: 0.1 });
+            gsap.to(teaserContent, { opacity: 1, duration: 0.75, scale: 1 });
           },
           onEnterBack: () => {
             teaserContent.style.top = `${dotPosition.y}px`;
@@ -108,7 +108,7 @@
 
             gsap.fromTo(
               teaserContent,
-              { opacity: 0, scale: 0.1 },
+              { opacity: 1, scale: 1 },
               {
                 opacity: 1,
                 scale: 1,
